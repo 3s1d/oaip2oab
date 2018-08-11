@@ -11,10 +11,13 @@
 #define deg2rad(angleDegrees) (angleDegrees * M_PI / 180.0)
 #define rad2deg(angleRadians) (angleRadians * 180.0 / M_PI)
 
+//TODO: timestamp!
+
 /*
  * Format:
- * 3byte char     'OAB'
- * 1byte uint8_t  version number, currently 1
+ * 3byte char      'OAB'
+ * 1byte uint8_t   version number, currently 1
+ * 8byte time_t	   built time
  *
  * Airspace:
  * Header:
@@ -79,6 +82,7 @@ public:
 	std::vector<oab_edge_t> polygon;
 
 	void reset(void);
+	void setName(std::string &name);
 	void add(Coord &coord);
 };
 

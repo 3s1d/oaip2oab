@@ -24,9 +24,7 @@ Handler::Handler()
 
 Handler::~Handler()
 {
-	/* cleanup */
-//	for(auto airspace : airspaces)
-//		delete airspace;
+
 }
 
 void Handler::start_element(const xml::string& name, const xml::attributes& attr)
@@ -46,7 +44,7 @@ void Handler::start_element(const xml::string& name, const xml::attributes& attr
 	else if(name == "COUNTRY")
 		next_data = NEXT_DATA_COUNTRY;
 	else if(name == "OPENAIP" || name  == "AIRSPACES"  || name  == "VERSION"  || name  == "ID" || name  == "GEOMETRY")
-	{ /* do nothing */ }
+		{ /* do nothing */ }
 	else
 		std::cerr << "Unknown element: " << name << std::endl;
 
@@ -54,22 +52,20 @@ void Handler::start_element(const xml::string& name, const xml::attributes& attr
 
 void Handler::end_element(const xml::string& name)
 {
-//	std::cout << "name " << name.c_str() << ">>>>>" << std::endl;
-
 	if(next_data != NEXT_DATA_NONE)
 	{
 		if(next_data == NEXT_DATA_NAME)
 		{
 			//removes type from name?
+			/* remove type from name */
+//todo: 'TMZ-' or 'TMZ ' or 'CTR '
 /*			if(!strncmp(handle_str.c_str(), tmp_asp_.type.c_str(), strlen(tmp_asp_.type.c_str())) &&
 					handle_str.c_str()[strlen(tmp_asp_.type.c_str())] == ' ')
 			{
 				handle_str = handle_str.substr(tmp_asp_.type.size()+1);
 			}
-
-			tmp_asp_.name = handle_str;
 */
-//			std::cout << "Name: " << handle_str << std::endl;
+			tmp_asp.setName(handle_str);
 		}
 		else if(next_data == NEXT_DATA_ALTITUDE)
 		{
@@ -116,43 +112,73 @@ void Handler::handle_data(const xml::string& content, const int length)
 
 
 /*
- *
  * airspace functions
- *
  */
+
+/*
+CLASSA = 0,
+CLASSB,
+CLASSC,
+CLASSD,
+CLASSE,
+CLASSF,
+CLASSG,
+DANGER,
+PROHIBITED,
+RESTRICTED,
+CTR,
+TMA,
+TMZ,
+RMZ,
+FIR, // from here on not visible by default
+UIR,
+OTH,
+GLIDING,
+NOGLIDER,
+WAVE,
+UNKNOWN, // "UNKNOWN" can be used in OpenAir files
+UNDEFINED // also the last one
+ */
+
 void Handler::start_asp(const xml::attributes& attr)
 {
-	//std::cout << "start asp" << std::endl;
-
 	/* re-init asp */
 	tmp_asp.reset();
 
 	std::string category = std::string(attr["CATEGORY"]);
-	tmp_asp.header.type = '?';					//todo SORT!!!
-	if(category == "RESTRICTED")
-		tmp_asp.header.type = 'R';
-	else if(category == "WAVE")
-		tmp_asp.header.type = 'W';
-	else if(category == "PROHIBITED")
-		tmp_asp.header.type = 'P';
-	else if(category == "DANGER")
-		tmp_asp.header.type = 'Q';
-	else if(category == "GLIDING")
-		tmp_asp.header.type = 'g';			//todo W?
+	tmp_asp.header.type = '?';
+	if(category == "A")
+		tmp_asp.header.type = 'A';
+	else if(category == "B")
+		tmp_asp.header.type = 'B';
 	else if(category == "C")
 		tmp_asp.header.type = 'C';
 	else if(category == "D")
 		tmp_asp.header.type = 'D';
-	else if(category == "CTR")
-		tmp_asp.header.type = 'c';
-	else if(category == "TMZ")
-		tmp_asp.header.type = 't';
 	else if(category == "E")
 		tmp_asp.header.type = 'E';
+	else if(category == "F")
+		tmp_asp.header.type = 'F';
 	else if(category == "G")
 		tmp_asp.header.type = 'G';
+	else if(category == "PROHIBITED")
+		tmp_asp.header.type = 'P';
+	else if(category == "DANGER")
+		tmp_asp.header.type = 'Q';
+	else if(category == "RESTRICTED")
+		tmp_asp.header.type = 'R';
+	else if(category == "CTR")
+		tmp_asp.header.type = 'c';
+	else if(category == "TMA")
+		tmp_asp.header.type = 'a';
+	else if(category == "TMZ")
+		tmp_asp.header.type = 'z';
 	else if(category == "RMZ")
 		tmp_asp.header.type = 'r';
+	else if(category == "WAVE")
+		tmp_asp.header.type = '-';			//ignore
+	else if(category == "GLIDING")
+		tmp_asp.header.type = '-';			//ignore
 	else if(category == "FIR")
 		tmp_asp.header.type = '-';			//ignore
 	else

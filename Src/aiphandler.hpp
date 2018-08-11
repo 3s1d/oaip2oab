@@ -13,8 +13,6 @@
 #include "oab.hpp"
 #include "xml.hpp"
 
-//todo enum
-
 #define NEXT_DATA_NONE		0
 #define NEXT_DATA_NAME		1
 #define NEXT_DATA_ALTITUDE	2
