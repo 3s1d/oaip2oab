@@ -68,16 +68,9 @@ class attributes
 {
 public:
 
-	explicit attributes(const char** attr) :
-			attr_(attr)
-	{
-	}
+	explicit attributes(const char** attr) : attr_(attr) { }
 
-	const char* operator[](const xml::string& key) const
-	{
-		return get(key);
-	}
-
+	const char* operator[](const xml::string& key) const { return get(key);	}
 	const char* get(const xml::string& key) const;
 	int64_t as_int64(const xml::string& key) const;
 	double as_double(const xml::string& key) const;

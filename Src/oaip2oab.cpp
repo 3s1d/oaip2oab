@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
 	vector<string> files;
 	read_directory(argv[1], files);
 
-	aip::handler aiphandler;
-	xml::parser < aip::handler > parser(aiphandler);
+	aip::Handler aiphandler;
+	xml::parser <aip::Handler> parser(aiphandler);
 
 	/* iterate over all files */
 	for(auto file : files)
@@ -56,11 +56,15 @@ int main(int argc, char* argv[])
 		//todo improve check
 		if(file.find(".aip") == std::string::npos)
 			continue;
-		std::cout << "Converting file: " << file << std::endl;
+		string fname = string(argv[1]);
+		fname += "/" + file;
+		std::cout << "Converting file: " << fname << std::endl;
 
 		/* add to aip handler */
-		parser.parse(argv[1]);
+		parser.parse(fname);
 	}
+
+	aiphandler.test();
 
 	return 0;
 }

@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "oab.hpp"
 #include "xml.hpp"
 
 //todo enum
@@ -27,7 +28,7 @@
 namespace aip
 {
 
-class handler
+class Handler
 {
 private:
 	void start_asp(const xml::attributes& attr);
@@ -44,14 +45,26 @@ private:
 
 	int next_data = NEXT_DATA_NONE;
 	int next_alt = NEXT_ALT_NONE;
+
+	OAB tmp_asp;
+	std::vector<OAB> airspaces;
 public:
-	handler();
-	~handler();
+	Handler();
+	~Handler();
 
 	void start_element(const xml::string& name, const xml::attributes& attr);
 	void end_element(const xml::string& name);
 	void handle_data(const xml::string& content, const int length);
 	void handle_comment(const XML_Char *comment);
+
+	void test()
+	{
+		std::cout << "num: " << airspaces.size() << std::endl;
+		for(auto asp : airspaces)
+		{
+			std::cout << asp.polygon.size() << std::endl;
+		}
+	}
 };
 
 }

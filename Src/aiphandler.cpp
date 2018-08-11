@@ -17,17 +17,19 @@
 
 using namespace aip;
 
-handler::handler()
+Handler::Handler()
 {
 
 }
 
-handler::~handler()
+Handler::~Handler()
 {
-
+	/* cleanup */
+//	for(auto airspace : airspaces)
+//		delete airspace;
 }
 
-void handler::start_element(const xml::string& name, const xml::attributes& attr)
+void Handler::start_element(const xml::string& name, const xml::attributes& attr)
 {
 	if(name == "ASP")
 		start_asp(attr);
@@ -50,9 +52,9 @@ void handler::start_element(const xml::string& name, const xml::attributes& attr
 
 }
 
-void handler::end_element(const xml::string& name)
+void Handler::end_element(const xml::string& name)
 {
-	//std::cout << "name " << name.c_str() << ">>>>>" << std::endl;
+//	std::cout << "name " << name.c_str() << ">>>>>" << std::endl;
 
 	if(next_data != NEXT_DATA_NONE)
 	{
@@ -101,7 +103,7 @@ void handler::end_element(const xml::string& name)
 
 }
 
-void handler::handle_data(const xml::string& content, const int length)
+void Handler::handle_data(const xml::string& content, const int length)
 {
 	if(next_data == NEXT_DATA_NONE)
 		return;
@@ -118,31 +120,49 @@ void handler::handle_data(const xml::string& content, const int length)
  * airspace functions
  *
  */
-void handler::start_asp(const xml::attributes& attr)
+void Handler::start_asp(const xml::attributes& attr)
 {
+	//std::cout << "start asp" << std::endl;
+
 	/* re-init asp */
-/*	tmp_asp_.clean();
+	tmp_asp.reset();
 
-	tmp_asp_.type = attr["CATEGORY"];
-	if(tmp_asp_.type == "RESTRICTED")
-		tmp_asp_.type = "R";
-	else if(tmp_asp_.type == "WAVE")
-		tmp_asp_.type = "W";
-	else if(tmp_asp_.type == "PROHIBITED")
-		tmp_asp_.type = "P";
-	else if(tmp_asp_.type == "DANGER")
-		tmp_asp_.type = "Q";
-	else if(tmp_asp_.type == "GLIDING")
-		tmp_asp_.type = "GSEC";			//todo W?
+	std::string category = std::string(attr["CATEGORY"]);
+	tmp_asp.header.type = '?';					//todo SORT!!!
+	if(category == "RESTRICTED")
+		tmp_asp.header.type = 'R';
+	else if(category == "WAVE")
+		tmp_asp.header.type = 'W';
+	else if(category == "PROHIBITED")
+		tmp_asp.header.type = 'P';
+	else if(category == "DANGER")
+		tmp_asp.header.type = 'Q';
+	else if(category == "GLIDING")
+		tmp_asp.header.type = 'g';			//todo W?
+	else if(category == "C")
+		tmp_asp.header.type = 'C';
+	else if(category == "D")
+		tmp_asp.header.type = 'D';
+	else if(category == "CTR")
+		tmp_asp.header.type = 'c';
+	else if(category == "TMZ")
+		tmp_asp.header.type = 't';
+	else if(category == "E")
+		tmp_asp.header.type = 'E';
+	else if(category == "G")
+		tmp_asp.header.type = 'G';
+	else if(category == "RMZ")
+		tmp_asp.header.type = 'r';
+	else if(category == "FIR")
+		tmp_asp.header.type = '-';			//ignore
+	else
+		std::cerr << "unknown airspace type: " << category << std::endl;
 
-	if(tmp_asp_.type.length() > 4)
-		std::cerr << "unknown airspace type: " << tmp_asp_.type << std::endl;
-*/
 	next_data = NEXT_DATA_NONE;
 	next_alt = NEXT_ALT_NONE;
 }
 
-void handler::alt_ref(const xml::attributes& attr)
+void Handler::alt_ref(const xml::attributes& attr)
 {
 /*	int ref;
 	if(!strcmp(attr["REFERENCE"],"STD"))
@@ -166,24 +186,24 @@ void handler::alt_ref(const xml::attributes& attr)
 */
 }
 
-void handler::start_ceiling(const xml::attributes& attr)
+void Handler::start_ceiling(const xml::attributes& attr)
 {
 	next_alt = NEXT_ALT_CEILING;
 	alt_ref(attr);
 }
 
-void handler::start_floor(const xml::attributes& attr)
+void Handler::start_floor(const xml::attributes& attr)
 {
 	next_alt = NEXT_ALT_FLOOR;
 	alt_ref(attr);
 }
 
-void handler::end_altlimit()
+void Handler::end_altlimit()
 {
 	next_alt = NEXT_ALT_NONE;
 }
 
-void handler::start_alt(const xml::attributes& attr)
+void Handler::start_alt(const xml::attributes& attr)
 {
 /*	int unit;
 	if(!strcmp(attr["UNIT"], "FL"))
@@ -206,36 +226,30 @@ void handler::start_alt(const xml::attributes& attr)
 	next_data = NEXT_DATA_ALTITUDE;
 }
 
-void handler::end_asp()
+void Handler::end_asp()
 {
-/*	if(tmp_asp_.type == "FIR")
+	//std::cout << "end asp" << std::endl;
+
+	if(tmp_asp.header.type == '-')
 		return;
 
-	if(strstr(tmp_asp_.name.c_str(), "paragliding") != NULL)
-		return;
+//	if(strstr(tmp_asp_.name.c_str(), "paragliding") != NULL)
+//		return;
 
-	if(tmp_asp_.country != country)
-	{
-		//std::cerr << "wrong country" << std::endl;
-		return;
-	}
-
-	std::cout << tmp_asp_;
-*/
+	airspaces.push_back(tmp_asp);
 }
 
-void handler::polygons(std::string line)
+void Handler::polygons(std::string line)
 {
 	std::istringstream ss(line);
 	std::string token;
 
-	std::vector<Coord> poly;
 	while(std::getline(ss, token, ','))
 	{
 		std::istringstream coord_ss(token);
 		Coord coord;
 		coord_ss >> coord.longitude >> coord.latitude;
-		poly.push_back(coord);
+		tmp_asp.add(coord);
 	}
 //todo  last point unneeded!!!!
 /*
@@ -257,7 +271,7 @@ void handler::polygons(std::string line)
 }
 
 
-void handler::handle_comment(const XML_Char *comment)
+void Handler::handle_comment(const XML_Char *comment)
 {
 /*	static bool greater = false;
 
