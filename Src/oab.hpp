@@ -11,7 +11,7 @@
 #define deg2rad(angleDegrees) (angleDegrees * M_PI / 180.0)
 #define rad2deg(angleRadians) (angleRadians * 180.0 / M_PI)
 
-//TODO: timestamp!
+//todo type mapping! enum!
 
 /*
  * Format:
@@ -45,15 +45,49 @@
 
 #include "coord.hpp"
 
+#define OBA_ALTREF_GND			0x0001
+#define OBA_ALTREF_MSL			0x0002
+#define OBA_ALTREF_FL			0x0003
+
+#define OBA_ALTREF_BOTTON_OFFSET	0
+#define OBA_ALTREF_TOP_OFFSET		3		//1bit reserved
+
 class OAB
 {
 public:
+	typedef enum : char
+	{
+		CLASSA = 'A',
+		CLASSB = 'B',
+		CLASSC = 'C',
+		CLASSD = 'D',
+		CLASSE = 'E',
+		CLASSF = 'F',
+		CLASSG = 'G',
+		DANGER = 'Q',
+		PROHIBITED = 'P',
+		RESTRICTED = 'R',
+		CTR = 'c',
+		TMA = 'a',
+		TMZ = 'z',
+		RMZ = 'r',
+		FIR = 'f', 			// from here on we drop everything
+		UIR = 'u',
+		OTH = 'o',
+		GLIDING = 'g',
+		NOGLIDER = 'n',
+		WAVE = 'W',
+		UNKNOWN = '?', 			// "UNKNOWN" can be used in OpenAir files
+		UNDEFINED = '?',		// also the last one
+		IGNORE = '-'
+	} airspace_type_t;
+
 	const char *id = "OAB\x1";
  	typedef struct
 	{
 		/* name */
 		char name[31];
-		char type;
+		airspace_type_t type;
 
 		/* altitude */
 		int16_t altitudeTop_ft;
@@ -84,6 +118,9 @@ public:
 	void reset(void);
 	void setName(std::string &name);
 	void add(Coord &coord);
+
+	void writeFileHeader(std::ofstream &file);
+	void write(std::ofstream &file);
 };
 
 

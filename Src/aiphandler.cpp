@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <fstream>
 
 #include "aiphandler.hpp"
 #include "coord.hpp"
@@ -46,7 +47,10 @@ void Handler::start_element(const xml::string& name, const xml::attributes& attr
 	else if(name == "OPENAIP" || name  == "AIRSPACES"  || name  == "VERSION"  || name  == "ID" || name  == "GEOMETRY")
 		{ /* do nothing */ }
 	else
+	{
 		std::cerr << "Unknown element: " << name << std::endl;
+		exit(EXIT_FAILURE);
+	}
 
 }
 
@@ -56,37 +60,37 @@ void Handler::end_element(const xml::string& name)
 	{
 		if(next_data == NEXT_DATA_NAME)
 		{
-			//removes type from name?
 			/* remove type from name */
-//todo: 'TMZ-' or 'TMZ ' or 'CTR '
-/*			if(!strncmp(handle_str.c_str(), tmp_asp_.type.c_str(), strlen(tmp_asp_.type.c_str())) &&
-					handle_str.c_str()[strlen(tmp_asp_.type.c_str())] == ' ')
-			{
-				handle_str = handle_str.substr(tmp_asp_.type.size()+1);
-			}
-*/
+			if((tmp_asp.header.type==OAB::TMZ && handle_str.compare(0, 3, "TMZ")==0) ||
+					(tmp_asp.header.type==OAB::TMA && handle_str.compare(0, 3, "TMA")==0) ||
+					(tmp_asp.header.type==OAB::CTR && handle_str.compare(0, 3, "CTR")==0))
+				handle_str = handle_str.substr(4);
+
 			tmp_asp.setName(handle_str);
 		}
 		else if(next_data == NEXT_DATA_ALTITUDE)
 		{
-/*			int value = atoi(handle_str.c_str());
+			/* convert altitude value */
+			int value = atoi(handle_str.c_str());
 
 			if(next_alt == NEXT_ALT_CEILING)
-				tmp_asp_.ceiling.value = value;
+				tmp_asp.header.altitudeTop_ft = value;
 			else if(next_alt == NEXT_ALT_FLOOR)
-				tmp_asp_.floor.value = value;
+				tmp_asp.header.altitudeBottom_ft = value;
 			else
+			{
 				std::cerr << "limit unknown" << std::endl;
-*/		}
+				exit(EXIT_FAILURE);
+			}
+		}
 		else if(next_data == NEXT_DATA_POLYGON)
 		{
 			polygons(handle_str);
 		}
 		else if(next_data == NEXT_DATA_COUNTRY)
 		{
-//			tmp_asp_.country = handle_str;
-		}
 
+		}
 
 		handle_str.clear();
 		next_data = NEXT_DATA_NONE;
@@ -109,35 +113,8 @@ void Handler::handle_data(const xml::string& content, const int length)
 }
 
 
-
-
 /*
  * airspace functions
- */
-
-/*
-CLASSA = 0,
-CLASSB,
-CLASSC,
-CLASSD,
-CLASSE,
-CLASSF,
-CLASSG,
-DANGER,
-PROHIBITED,
-RESTRICTED,
-CTR,
-TMA,
-TMZ,
-RMZ,
-FIR, // from here on not visible by default
-UIR,
-OTH,
-GLIDING,
-NOGLIDER,
-WAVE,
-UNKNOWN, // "UNKNOWN" can be used in OpenAir files
-UNDEFINED // also the last one
  */
 
 void Handler::start_asp(const xml::attributes& attr)
@@ -146,70 +123,73 @@ void Handler::start_asp(const xml::attributes& attr)
 	tmp_asp.reset();
 
 	std::string category = std::string(attr["CATEGORY"]);
-	tmp_asp.header.type = '?';
+	tmp_asp.header.type = OAB::UNDEFINED;
 	if(category == "A")
-		tmp_asp.header.type = 'A';
+		tmp_asp.header.type = OAB::CLASSA;
 	else if(category == "B")
-		tmp_asp.header.type = 'B';
+		tmp_asp.header.type = OAB::CLASSB;
 	else if(category == "C")
-		tmp_asp.header.type = 'C';
+		tmp_asp.header.type = OAB::CLASSC;
 	else if(category == "D")
-		tmp_asp.header.type = 'D';
+		tmp_asp.header.type = OAB::CLASSD;
 	else if(category == "E")
-		tmp_asp.header.type = 'E';
+		tmp_asp.header.type = OAB::CLASSE;
 	else if(category == "F")
-		tmp_asp.header.type = 'F';
+		tmp_asp.header.type = OAB::CLASSF;
 	else if(category == "G")
-		tmp_asp.header.type = 'G';
+		tmp_asp.header.type = OAB::CLASSG;
 	else if(category == "PROHIBITED")
-		tmp_asp.header.type = 'P';
+		tmp_asp.header.type = OAB::PROHIBITED;
 	else if(category == "DANGER")
-		tmp_asp.header.type = 'Q';
+		tmp_asp.header.type = OAB::DANGER;
 	else if(category == "RESTRICTED")
-		tmp_asp.header.type = 'R';
+		tmp_asp.header.type = OAB::RESTRICTED;
 	else if(category == "CTR")
-		tmp_asp.header.type = 'c';
+		tmp_asp.header.type = OAB::CTR;
 	else if(category == "TMA")
-		tmp_asp.header.type = 'a';
+		tmp_asp.header.type = OAB::TMA;
 	else if(category == "TMZ")
-		tmp_asp.header.type = 'z';
+		tmp_asp.header.type = OAB::TMZ;
 	else if(category == "RMZ")
-		tmp_asp.header.type = 'r';
+		tmp_asp.header.type = OAB::RMZ;
 	else if(category == "WAVE")
-		tmp_asp.header.type = '-';			//ignore
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "GLIDING")
-		tmp_asp.header.type = '-';			//ignore
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "FIR")
-		tmp_asp.header.type = '-';			//ignore
+		tmp_asp.header.type =OAB:: FIR;					//ignore
 	else
+	{
 		std::cerr << "unknown airspace type: " << category << std::endl;
+		exit(EXIT_FAILURE);
+	}
 
 	next_data = NEXT_DATA_NONE;
 	next_alt = NEXT_ALT_NONE;
+	next_altref = NEXT_ALTREF_NONE;
 }
 
 void Handler::alt_ref(const xml::attributes& attr)
 {
-/*	int ref;
-	if(!strcmp(attr["REFERENCE"],"STD"))
-		ref = REF_STD;
-	else if(!strcmp(attr["REFERENCE"],"MSL"))
-		ref = REF_MSL;
-	else if(!strcmp(attr["REFERENCE"],"GND"))
-		ref = REF_GND;
+	std::string reference = std::string(attr["REFERENCE"]);
+	if(reference == "STD")
+	{
+		next_altref = NEXT_ALTREF_STD;
+	}
+	else if(reference =="MSL")
+	{
+		next_altref = NEXT_ALTREF_MSL;
+	}
+	else if(reference =="GND")
+	{
+		next_altref = NEXT_ALTREF_GND;
+	}
 	else
 	{
-		ref = REF_MSL;
-		std::cerr << "unknown reference, assuming MSL" << std::endl;
+		next_altref = NEXT_ALTREF_NONE;
+		std::cerr << "unknown altitude reference " << reference << " (" << tmp_asp.header.name << ")" << std::endl;
+		exit(EXIT_FAILURE);
 	}
-
-	if(next_alt == NEXT_ALT_CEILING)
-		tmp_asp_.ceiling.refernce = ref;
-	else if(next_alt == NEXT_ALT_FLOOR)
-		tmp_asp_.floor.refernce = ref;
-	else
-		std::cerr << "unknown limit for reference" << std::endl;
-*/
 }
 
 void Handler::start_ceiling(const xml::attributes& attr)
@@ -227,40 +207,55 @@ void Handler::start_floor(const xml::attributes& attr)
 void Handler::end_altlimit()
 {
 	next_alt = NEXT_ALT_NONE;
+	next_altref = NEXT_ALTREF_NONE;
 }
 
 void Handler::start_alt(const xml::attributes& attr)
 {
-/*	int unit;
-	if(!strcmp(attr["UNIT"], "FL"))
-		unit = UNIT_FL;
-	else if(!strcmp(attr["UNIT"], "F"))
-		unit = UNIT_FT;
+	std::string unit = std::string(attr["UNIT"]);
+	uint16_t altref = 0;
+
+	if(unit == "FL")
+	{
+		altref = OBA_ALTREF_FL;
+	}
+	else if(next_altref == NEXT_ALTREF_GND && unit ==  "F")
+	{
+		altref = OBA_ALTREF_GND;
+	}
+	else if(next_altref == NEXT_ALTREF_MSL && unit == "F")
+	{
+		altref = OBA_ALTREF_MSL;
+	}
 	else
 	{
-		unit = UNIT_FT;
-		std::cerr << "unknown unit" << std::endl;
+		std::cerr << "unknown unit " << unit << " for reference " << next_altref << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
 	if(next_alt == NEXT_ALT_CEILING)
-		tmp_asp_.ceiling.unit = unit;
+	{
+		tmp_asp.header.flags |= altref << OBA_ALTREF_TOP_OFFSET;
+	}
 	else if(next_alt == NEXT_ALT_FLOOR)
-		tmp_asp_.floor.unit = unit;
+	{
+		tmp_asp.header.flags |= altref << OBA_ALTREF_BOTTON_OFFSET;
+	}
 	else
-		std::cerr << "unknown limit for unit" << std::endl;
-*/
+	{
+		std::cerr << "unknown altitude" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	/* eval value */
 	next_data = NEXT_DATA_ALTITUDE;
 }
 
 void Handler::end_asp()
 {
-	//std::cout << "end asp" << std::endl;
-
-	if(tmp_asp.header.type == '-')
+	/* ignore airspace */
+	if(tmp_asp.header.type == OAB::IGNORE)
 		return;
-
-//	if(strstr(tmp_asp_.name.c_str(), "paragliding") != NULL)
-//		return;
 
 	airspaces.push_back(tmp_asp);
 }
@@ -299,19 +294,25 @@ void Handler::polygons(std::string line)
 
 void Handler::handle_comment(const XML_Char *comment)
 {
-/*	static bool greater = false;
 
-	std::cout<<comment;
+}
 
-	if(greater == false)
-	{
-		std::cout << "*" << std::endl;
-		std::cout << "*  Modified by Skytraxx GmbH to reduce the border complexity" << std::endl;
-		std::cout << "*  (In order to be less resource demanding)" << std::endl;
-		std::cout << "*  Modified on: ";
-		std::time_t result = std::time(NULL);
-		std::cout << std::ctime(&result) << std::endl;
-	}*/
+bool Handler::writeOba(const char *fname)
+{
+	std::ofstream myFile (fname, std::ios::out | std::ios::binary);
+
+	/* header */
+	tmp_asp.writeFileHeader(myFile);
+
+	/* airspaces */
+	for(auto airspace : airspaces)
+		airspace.write(myFile);
+
+	myFile.close();
+
+	std::cout << "Written " << airspaces.size() << " airspaces" << std::endl;
+
+	return true;
 }
 
 

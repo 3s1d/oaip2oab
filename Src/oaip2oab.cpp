@@ -47,7 +47,6 @@ int main(int argc, char* argv[])
 	read_directory(argv[1], files);
 
 	aip::Handler aiphandler;
-	xml::parser <aip::Handler> parser(aiphandler);
 
 	/* iterate over all files */
 	for(auto file : files)
@@ -61,10 +60,11 @@ int main(int argc, char* argv[])
 		std::cout << "Converting file: " << fname << std::endl;
 
 		/* add to aip handler */
+		xml::parser <aip::Handler> parser(aiphandler);
 		parser.parse(fname);
 	}
 
-	aiphandler.test();
+	aiphandler.writeOba("world.oab");
 
 	return 0;
 }

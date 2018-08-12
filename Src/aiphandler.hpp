@@ -23,6 +23,11 @@
 #define NEXT_ALT_FLOOR		-1
 #define NEXT_ALT_NONE		0
 
+#define NEXT_ALTREF_NONE	0
+#define NEXT_ALTREF_STD		1
+#define NEXT_ALTREF_GND		2
+#define NEXT_ALTREF_MSL		3
+
 namespace aip
 {
 
@@ -43,6 +48,7 @@ private:
 
 	int next_data = NEXT_DATA_NONE;
 	int next_alt = NEXT_ALT_NONE;
+	int next_altref = NEXT_ALTREF_NONE;
 
 	OAB tmp_asp;
 	std::vector<OAB> airspaces;
@@ -63,6 +69,7 @@ public:
 			std::cout << asp.polygon.size() << std::endl;
 		}
 	}
+	bool writeOba(const char *fname);
 };
 
 }
