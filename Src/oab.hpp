@@ -110,10 +110,21 @@ public:
 	} __attribute__((packed)) oab_edge_t;
 
 private:
+	void finalize(void);
+	void add2RadVec(Coord &coord);
+
+	/* last position */
+	Coord last_p;
+
+	/* last inored position */
+	Coord last_ign_p;
+	bool last_ign;
+
 
 public:
 	oab_header_t header = {{0}};
-	std::vector<oab_edge_t> polygon;
+	std::vector<oab_edge_t> polygon;	//rad
+	float polygonSample_dist = 0.0f;
 
 	void reset(void);
 	void setName(std::string &name);

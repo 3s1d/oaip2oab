@@ -133,11 +133,11 @@ void Handler::start_asp(const xml::attributes& attr)
 	else if(category == "D")
 		tmp_asp.header.type = OAB::CLASSD;
 	else if(category == "E")
-		tmp_asp.header.type = OAB::CLASSE;
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "F")
-		tmp_asp.header.type = OAB::CLASSF;
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "G")
-		tmp_asp.header.type = OAB::CLASSG;
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "PROHIBITED")
 		tmp_asp.header.type = OAB::PROHIBITED;
 	else if(category == "DANGER")
@@ -157,7 +157,7 @@ void Handler::start_asp(const xml::attributes& attr)
 	else if(category == "GLIDING")
 		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else if(category == "FIR")
-		tmp_asp.header.type =OAB:: FIR;					//ignore
+		tmp_asp.header.type = OAB::IGNORE;				//ignore
 	else
 	{
 		std::cerr << "unknown airspace type: " << category << std::endl;
@@ -265,30 +265,29 @@ void Handler::polygons(std::string line)
 	std::istringstream ss(line);
 	std::string token;
 
+	std::vector<Coord> poly;
 	while(std::getline(ss, token, ','))
 	{
 		std::istringstream coord_ss(token);
 		Coord coord;
 		coord_ss >> coord.longitude >> coord.latitude;
-		tmp_asp.add(coord);
+		poly.push_back(coord);
 	}
-//todo  last point unneeded!!!!
-/*
-	tmp_asp_.poly_sample_dist = 0.0;
 
-	while(tmp_asp_.polygon.size() > 250 || tmp_asp_.poly_sample_dist == 0.0)
+	/* reduce polygon count */
+	tmp_asp.polygonSample_dist = -100.0f;
+	while(tmp_asp.polygon.size() > 250 || tmp_asp.polygonSample_dist < 0.0)
 	{
-		tmp_asp_.poly_sample_dist += 100.0;
-		tmp_asp_.polygon.clear();
+		tmp_asp.polygonSample_dist += 100.0;
+		tmp_asp.polygon.clear();
 
-		for(p2df coord: poly)
-			tmp_asp_.add_sample(coord);
-		tmp_asp_.finalize_sample();
+		for(auto coord: poly)
+			tmp_asp.add(coord);
 	}
 
-	std::cerr << tmp_asp_.name << ": " << poly.size() << " -> " << tmp_asp_.polygon.size() << " (" << tmp_asp_.poly_sample_dist << "m)" << std::endl;
-*/
-//	std::cout << "size:" << poly.size() << std::endl;
+	if(poly.size() != tmp_asp.polygon.size())
+		std::cerr << "Reducing polygon size of " << tmp_asp.header.name << ": " << poly.size() << " -> " << tmp_asp.polygon.size() <<
+				" (" << tmp_asp.polygonSample_dist << "m)" << std::endl;
 }
 
 
