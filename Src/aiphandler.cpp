@@ -217,15 +217,15 @@ void Handler::start_alt(const xml::attributes& attr)
 
 	if(unit == "FL")
 	{
-		altref = OBA_ALTREF_FL;
+		altref = OAB_ALTREF_FL;
 	}
 	else if(next_altref == NEXT_ALTREF_GND && unit ==  "F")
 	{
-		altref = OBA_ALTREF_GND;
+		altref = OAB_ALTREF_GND;
 	}
 	else if(next_altref == NEXT_ALTREF_MSL && unit == "F")
 	{
-		altref = OBA_ALTREF_MSL;
+		altref = OAB_ALTREF_MSL;
 	}
 	else
 	{
@@ -235,11 +235,11 @@ void Handler::start_alt(const xml::attributes& attr)
 
 	if(next_alt == NEXT_ALT_CEILING)
 	{
-		tmp_asp.header.flags |= altref << OBA_ALTREF_TOP_OFFSET;
+		tmp_asp.header.flags |= altref << OAB_ALTREF_TOP_OFFSET;
 	}
 	else if(next_alt == NEXT_ALT_FLOOR)
 	{
-		tmp_asp.header.flags |= altref << OBA_ALTREF_BOTTON_OFFSET;
+		tmp_asp.header.flags |= altref << OAB_ALTREF_BOTTON_OFFSET;
 	}
 	else
 	{
@@ -276,7 +276,7 @@ void Handler::polygons(std::string line)
 
 	/* reduce polygon count */
 	tmp_asp.polygonSample_dist = -100.0f;
-	while(tmp_asp.polygon.size() > 250 || tmp_asp.polygonSample_dist < 0.0)
+	while(tmp_asp.polygon.size() > 250 || tmp_asp.polygonSample_dist < 0.0)					//TODO magic number here
 	{
 		tmp_asp.polygonSample_dist += 100.0;
 		tmp_asp.polygon.clear();

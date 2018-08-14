@@ -100,6 +100,9 @@ void OAB::finalize(void)
 	}
 	header.numPoly = polygon.size();
 
+	/* add magic number to flags */
+	//note: only settings bits. might get corrupted!
+	header.flags |= OAB_MAGICNUMBER_FLAG;
 
 	/* bounding box */
 	header.topLat_rad = -M_PI;

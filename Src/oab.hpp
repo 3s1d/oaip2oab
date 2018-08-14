@@ -45,12 +45,14 @@
 
 #include "coord.hpp"
 
-#define OBA_ALTREF_GND			0x0001
-#define OBA_ALTREF_MSL			0x0002
-#define OBA_ALTREF_FL			0x0003
+#define OAB_ALTREF_GND			0x0001
+#define OAB_ALTREF_MSL			0x0002
+#define OAB_ALTREF_FL			0x0003
 
-#define OBA_ALTREF_BOTTON_OFFSET	0
-#define OBA_ALTREF_TOP_OFFSET		3		//1bit reserved
+#define OAB_ALTREF_BOTTON_OFFSET	0
+#define OAB_ALTREF_TOP_OFFSET		3		//1bit reserved
+
+#define OAB_MAGICNUMBER_FLAG		0xA000
 
 class OAB
 {
