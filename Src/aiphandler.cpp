@@ -276,7 +276,7 @@ void Handler::polygons(std::string line)
 
 	/* reduce polygon count */
 	tmp_asp.polygonSample_dist = -100.0f;
-	while(tmp_asp.polygon.size() > 250 || tmp_asp.polygonSample_dist < 0.0)					//TODO magic number here
+	while(tmp_asp.polygon.size() > 500 || tmp_asp.polygonSample_dist < 0.0)					//TODO magic number here
 	{
 		tmp_asp.polygonSample_dist += 100.0;
 		tmp_asp.polygon.clear();
