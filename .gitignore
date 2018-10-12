@@ -2,3 +2,5 @@ Release/*
 Debug/*
 oaip/*
 world.oab
+/Debug/
+/Release/
