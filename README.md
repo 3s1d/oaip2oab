@@ -3,7 +3,9 @@
 To build on Ubuntu (18.04) - should work on any other debian based system as well:
 
 `sudo apt install libboost-all-dev libkml-dev`
+
 `cd Src`
+
 `make`
 
 After successful build:
