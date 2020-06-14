@@ -5,6 +5,7 @@
  *      Author: sid
  */
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "oab.hpp"
