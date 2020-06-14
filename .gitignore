@@ -3,4 +3,6 @@ Debug/*
 oaip/*
 world.oab
 /Debug/
-/Release/
+Src/build
+build/
+*.o
