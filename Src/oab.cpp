@@ -2,15 +2,20 @@
  * oab.cpp
  *
  *  Created on: Aug 11, 2018
- *      Author: sid
+ *      Author: sid, Stefan Seifert
  */
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstring>
+#include <time.h>
 
 #include "oab.hpp"
+
+const char *OAB::id = "OAB\x2";
 
 Coord proj_deg(Coord &src, Coord &poi)
 {
@@ -61,10 +66,14 @@ void OAB::add2RadVec(Coord &coord)
 
 void OAB::writeFileHeader(std::ofstream &file)
 {
+	writeFileHeader(file, time(nullptr));
+}
+
+void OAB::writeFileHeader(std::ofstream& file, time_t buildTime)
+{
 	file.write(id, strlen(id));
 
-	time_t t = time(nullptr);
-	file.write((char *) &t, sizeof(time_t));
+	file.write((char*)& buildTime, sizeof(time_t));
 }
 
 void OAB::write(std::ofstream &file)
@@ -76,8 +85,14 @@ void OAB::write(std::ofstream &file)
 	file.write((char *) &header, sizeof(oab_header_t));
 
 	/* write polygons */
-	for(auto poly : polygon)
-		file.write((char *) &poly, sizeof(oab_edge_t));
+	for (auto poly : polygon) {
+		file.write((char*)& poly, sizeof(oab_edge_t));
+	}
+
+	/* write activation times */
+	for(auto activationTime : activationTimes) {
+		file.write((char *)& activationTime, sizeof(oab_activationTimes_t));
+	}
 }
 
 void OAB::finalize(void)
@@ -120,6 +135,8 @@ void OAB::finalize(void)
 		if(poly.lon_rad > header.rightLon_rad)
 			header.rightLon_rad = poly.lon_rad;
 	}
+
+	header.numberOfActivationTimes = activationTimes.size();
 }
 
 void OAB::add(Coord &coord)

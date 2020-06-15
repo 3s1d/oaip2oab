@@ -240,7 +240,7 @@ void Handler::start_alt(const xml::attributes& attr)
 	}
 	else if(next_alt == NEXT_ALT_FLOOR)
 	{
-		tmp_asp.header.flags |= altref << OAB_ALTREF_BOTTON_OFFSET;
+		tmp_asp.header.flags |= altref << OAB_ALTREF_BOTTOM_OFFSET;
 	}
 	else
 	{
